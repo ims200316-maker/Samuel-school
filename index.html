@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <!-- 인터넷 창 탭 이름 변경 -->
     <title>사무엘학교 암송 연습</title>
-    <!-- 인터넷 창 탭 아이콘(파비콘) 적용 (캐시 무효화를 위해 ?v=2 추가) -->
+    <!-- 인터넷 창 탭 아이콘(파비콘) 적용 -->
     <link rel="icon" type="image/png" href="생명의말씀선교회CI_심볼(일반).png?v=2">
     
     <style>
@@ -58,6 +58,7 @@
         .book-day-title { background: var(--primary); color: white; padding: 4px 10px; border-radius: 5px; font-size: 16px; margin-top: 15px; display: inline-block; font-weight:bold;} 
         .book-item { margin: 8px 0; padding: 10px; border-bottom: 1px solid #eee; font-size: 17px; line-height: 1.5; } 
         .topic-badge { background: #fff3e0; color: #e65100; padding: 2px 6px; border-radius: 4px; font-size: 15px; font-weight: bold; margin-bottom: 4px; display: inline-block; }
+        .legend-box { background: #fff3e0; border: 1px solid #ffe0b2; padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 15px; color: #e65100; font-weight: bold; line-height: 1.5; }
         
         .quiz-btns-top { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 15px; }
         .quiz-btns-bottom { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
@@ -105,13 +106,12 @@
                 </select>
             </div>
             <div class="menu-item">
-                <label>📅 일차별 암송</label>
+                <label>📅 일차 선택</label>
                 <select id="day-select">
-                    <option value="all">전체 (5, 6, 1, 2, 3, 4일차)</option>
+                    <option value="all">전체 (5, 6, 1·2, 3, 4일차)</option>
                     <option value="5">5일차 (입학시험)</option>
                     <option value="6">6일차 (입학시험)</option>
-                    <option value="1">1일차 (수요일)</option>
-                    <option value="2">2일차 (수요일)</option>
+                    <option value="1_2">1·2일차 (수요일 통합)</option>
                     <option value="3">3일차 (목요일)</option>
                     <option value="4">4일차 (금요일)</option>
                 </select>
@@ -124,6 +124,9 @@
                 </select>
             </div>
         </div>
+        <!-- 문제 방식(장절/내용) 선택은 내부적으로 고정하거나 숨겨둘 수 있지만, 여기서는 내용을 쓰는 기본값으로 고정시키거나 숨깁니다. (사용자가 없애달라 요청) -->
+        <input type="hidden" id="mode-select" value="content" />
+        
         <div style="border-top: 1px solid #eee; padding-top: 20px; display: flex; flex-direction: column;">
             <button class="btn-contest" onclick="startQuiz()">연습시작</button>
             <button class="btn-book" onclick="openBookScreen()">과정별 암송수첩</button>
@@ -136,7 +139,7 @@
             <span id="progress-text" style="font-size:14px; color:#666;"></span>
         </div>
         <div id="question-box">
-            <!-- 주제 대신 "O일차"가 표시되는 부분 -->
+            <!-- 몇 일차인지 표시되는 부분 -->
             <span id="day-label" class="day-label"></span>
             <div id="question-text"></div>
         </div>
@@ -185,13 +188,20 @@
             <button class="tab-btn" id="tab-4" onclick="showBookCourse(4)">4과정</button>
         </div>
 
+        <div class="legend-box">
+            💡 <b>추가 구절 범례</b><br>
+            <span style="color:#d93025;">*</span> : 2과정 추가 암송<br>
+            <span style="color:#d93025;">**</span> : 3과정 추가 암송<br>
+            <span style="color:#d93025;">***</span> : 4과정 추가 암송
+        </div>
+
         <div class="book-container" id="book-list"></div>
         <button class="btn-gray" onclick="goBackManually()" style="margin-top:20px; width:100%;">돌아가기</button>
     </div>
 </div>
 
 <script>
-    // 1과정 기본 베이스 구절들
+    // 1과정 기본 베이스 구절들 (1일차, 2일차 분리 보관)
     const base1 = {
         5: [
             {ref: "(롬 5:12)", content: "이러므로 한 사람으로 말미암아 죄가 세상에 들어오고 죄로 말미암아 사망이 왔나니 이와 같이 모든 사람이 죄를 지었으므로 사망이 모든 사람에게 이르렀느니라"},
@@ -325,17 +335,23 @@
         4: [{ref:"(사 24:19-20)", content:"땅이 깨어지고 깨어지며 땅이 갈라지고 땅이 흔들리고 흔들리며 땅이 취한 자 같이 비틀비틀하며 침망 같이 흔들리며 그 위의 죄악이 중하므로 떨어지고 다시 일지 못하리라"}, {ref:"(단 9:27)", content:"그가 장차 많은 사람으로 더불어 한 이레 동안의 언약을 굳게 정하겠고 그가 그 이레의 절반에 제사와 예물을 금지할 것이며 또 잔포하여 미운 물건이 날개를 의지하여 설 것이며 또 이미 정한 종말까지 진노가 황폐케 하는 자에게 쏟아지리라 하였느니라"}, {ref:"(계 7:4)", content:"내가 인맞은 자의 수를 들으니 이스라엘 자손의 각 지파 중에서 인맞은 자들이 십사만 사천이니"}]
     };
 
-    // 1~4과정에 대해 각 일차별로 데이터를 합치면서 객체에 'day' 속성을 부여합니다.
+    // 1일차와 2일차를 1_2 라는 하나의 객체로 묶어줍니다. (수요일 통합)
+    base1["1_2"] = [...base1[1], ...base1[2]];
+    add2["1_2"]  = [...add2[1], ...add2[2]];
+    add3["1_2"]  = [...add3[1], ...add3[2]];
+    add4["1_2"]  = [...add4[1], ...add4[2]];
+
+    // 1~4과정에 대해 5,6,1_2,3,4 일차별로 데이터를 합치면서 객체에 'day', 'stars' 속성을 부여합니다.
     const bibleData = { 1: {}, 2: {}, 3: {}, 4: {} };
-    const dayOrderList = [5, 6, 1, 2, 3, 4];
+    const dayOrderList = [5, 6, "1_2", 3, 4];
     
     dayOrderList.forEach(day => {
-        const withDay = (arr) => arr ? arr.map(item => ({ ...item, day: day })) : [];
+        const withMeta = (arr, stars) => arr ? arr.map(item => ({ ...item, day: day, stars: stars })) : [];
         
-        const b1 = withDay(base1[day]);
-        const a2 = withDay(add2[day]);
-        const a3 = withDay(add3[day]);
-        const a4 = withDay(add4[day]);
+        const b1 = withMeta(base1[day], "");
+        const a2 = withMeta(add2[day], "*");
+        const a3 = withMeta(add3[day], "**");
+        const a4 = withMeta(add4[day], "***");
 
         bibleData[1][day] = [...b1];
         bibleData[2][day] = [...b1, ...a2];
@@ -346,13 +362,24 @@
     let currentList = [];
     let currentIndex = -1;
     let currentItem = {};
+    let isRefMode = false;
     let playOrder = 'sequential'; 
     let wrongItemsRecord = []; 
     let isCorrectState = false; 
 
     window.addEventListener('popstate', function() { goBackLogic(); });
 
-    // 시험 시작 시 선택한 과정의 범위를 5, 6, 1, 2, 3, 4일차 순서로 불러와서 진행합니다.
+    // 일차별 라벨명을 가져오는 함수
+    function getDayLabelText(day) {
+        if(day == 5) return "5일차 (입학시험)";
+        if(day == 6) return "6일차 (입학시험)";
+        if(day === "1_2") return "1·2일차 (수요일 통합)";
+        if(day == 3) return "3일차 (목요일)";
+        if(day == 4) return "4일차 (금요일)";
+        return "";
+    }
+
+    // 시험 시작 시 선택한 과정의 범위를 5, 6, 1_2, 3, 4일차 순서로 불러와서 진행합니다.
     function startQuiz() {
         const course = parseInt(document.getElementById('course-select').value);
         const day = document.getElementById('day-select').value;
@@ -361,13 +388,13 @@
         currentList = [];
         
         if (day === 'all') {
-            // "전체" 선택 시 5, 6, 1, 2, 3, 4 순서대로 배열을 이어붙입니다.
+            // "전체" 선택 시 지정된 순서대로 배열을 이어붙입니다.
             dayOrderList.forEach(d => {
                 currentList = currentList.concat(bibleData[course][d]);
             });
         } else {
             // 특정 일차 선택 시 해당 일차만 진행합니다.
-            currentList = [...bibleData[course][parseInt(day)]];
+            currentList = [...bibleData[course][day]];
         }
         
         if (playOrder === 'random') {
@@ -407,18 +434,13 @@
         const listDiv = document.getElementById('book-list');
         listDiv.innerHTML = "";
         
-        // 5, 6, 1, 2, 3, 4일차 순서로 렌더링
+        // 5, 6, 1_2, 3, 4일차 순서로 렌더링
         dayOrderList.forEach(day => {
-            let dayText = day + "일차";
-            if(day === 5 || day === 6) dayText += " (입학시험)";
-            else if(day === 1 || day === 2) dayText += " (수요일)";
-            else if(day === 3) dayText += " (목요일)";
-            else if(day === 4) dayText += " (금요일)";
-
-            listDiv.innerHTML += `<div class="book-day-title">${dayText}</div>`;
+            listDiv.innerHTML += `<div class="book-day-title">${getDayLabelText(day)}</div>`;
             
             bibleData[course][day].forEach(v => {
-                listDiv.innerHTML += `<div class="book-item"><b>${v.ref}</b><br>${v.content}</div>`;
+                let starHtml = v.stars ? ` <span style="color:#d93025; font-weight:bold;">${v.stars}</span>` : "";
+                listDiv.innerHTML += `<div class="book-item"><b>${v.ref}</b>${starHtml}<br>${v.content}</div>`;
             });
         });
     }
@@ -441,15 +463,17 @@
         isCorrectState = false; 
         currentItem = currentList[currentIndex];
         
-        // 주제 대신 몇일차 인지를 표기합니다.
-        let dayText = currentItem.day + "일차";
-        if (currentItem.day === 5 || currentItem.day === 6) dayText += " (입학시험)";
-        else if (currentItem.day === 1 || currentItem.day === 2) dayText += " (수요일)";
-        else if (currentItem.day === 3) dayText += " (목요일)";
-        else if (currentItem.day === 4) dayText += " (금요일)";
+        // 기본적으로 장절보고 내용쓰기 모드로 동작
+        const mode = document.getElementById('mode-select') ? document.getElementById('mode-select').value : 'content';
+        if (mode === 'mix') isRefMode = Math.random() > 0.5;
+        else isRefMode = (mode === 'ref');
         
-        document.getElementById('day-label').innerText = "📅 " + dayText;
-        document.getElementById('question-text').innerText = currentItem.ref;
+        // 몇일차 인지를 표기합니다.
+        document.getElementById('day-label').innerText = "📅 " + getDayLabelText(currentItem.day);
+        
+        // 연습 시에도 어떤 과정에서 추가된 것인지 별표 표기
+        let starHtml = currentItem.stars ? ` <span style="color:#d93025; font-size:0.8em;">${currentItem.stars}</span>` : "";
+        document.getElementById('question-text').innerHTML = (isRefMode ? currentItem.content : currentItem.ref) + starHtml;
         
         document.getElementById('userInput').value = "";
         document.getElementById('result').innerHTML = "";
@@ -488,7 +512,7 @@
 
     function checkAnswer() {
         const userIn = document.getElementById('userInput').value;
-        const target = currentItem.content; 
+        const target = isRefMode ? currentItem.ref : currentItem.content; 
         
         if (cleanText(userIn) === cleanText(target)) {
             isCorrectState = true; 
@@ -541,13 +565,11 @@
 
             if (item.wrongCount > 0) {
                 totalWrongTypes++;
-                
-                let dayText = item.day + "일차";
-                if(item.day === 5 || item.day === 6) dayText += " (입학시험)";
+                let starHtml = item.stars ? ` <span style="color:#d93025; font-weight:bold;">${item.stars}</span>` : "";
                 
                 wrongListArea.innerHTML += `
                     <div class="wrong-review-item">
-                        <span class="topic-badge">${dayText}</span> <b>${item.ref}</b> 틀림 (${item.wrongCount}회)<br>
+                        <span class="topic-badge">${getDayLabelText(item.day)}</span> <b>${item.ref}</b>${starHtml} 틀림 (${item.wrongCount}회)<br>
                         <span style="font-size: 14px; color: #555;">${item.content}</span>
                     </div>
                 `;
