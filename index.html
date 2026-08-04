@@ -9,13 +9,8 @@
     <link rel="icon" type="image/png" href="생명의말씀선교회CI_심볼(일반).png?v=2">
     
     <style>
-        /* KoPubWorld 돋움체 웹 폰트 적용 */
-        @font-face {
-            font-family: 'KoPubWorldDotum';
-            font-weight: 400;
-            font-style: normal;
-            src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2201-2@1.0/KoPubWorldDotum.woff') format('woff');
-        }
+        /* 🔥 가장 안정적인 방식으로 KoPubWorld 돋움체 불러오기 */
+        @import url('https://webfontworld.github.io/kopub/KoPubWorldDotum.css');
 
         :root { --primary: #1a73e8; --secondary: #34a853; --accent: #fbbc05; --bg: #f8f9fa; --burgundy: #800020; }
         
@@ -25,7 +20,7 @@
         .container { width: 100%; max-width: 800px; transition: all 0.3s ease; }
         .card { background: white; padding: 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; margin-bottom: 20px; box-sizing: border-box; }
         
-        h1 { color: #000; font-size: 1.8rem; margin-bottom: 20px; word-break: keep-all; line-height: 1.3; } 
+        h1 { color: #000; font-size: 1.8rem; margin-bottom: 20px; word-break: keep-all; line-height: 1.3; font-weight: bold; } 
         
         .menu-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 20px; }
         .menu-item { text-align: left; }
@@ -43,7 +38,7 @@
         .day-label { color: #d93025; font-weight: bold; font-size: 16px; margin-bottom: 5px; display: block; } 
         #question-text { font-size: 21px; font-weight:bold; color: var(--primary); line-height: 1.6; word-break: keep-all; text-align: center; } 
         
-        textarea { font-family: 'KoPubWorldDotum', 'Malgun Gothic', sans-serif; width: 100%; height: 120px; border: 2px solid #ddd; border-radius: 12px; padding: 12px; font-size: 19px; resize: none; box-sizing: border-box; outline: none; margin-top: 10px; appearance: none; }
+        textarea { font-family: 'KoPubWorldDotum', 'Malgun Gothic', sans-serif; width: 100%; height: 120px; border: 2px solid #ddd; border-radius: 12px; padding: 12px; font-size: 19px; resize: none; box-sizing: border-box; outline: none; margin-top: 10px; appearance: none; line-height: 1.5; }
         
         #result { margin-top: 15px; text-align: left; min-height: 80px; font-size: 17px; } 
         .wrong-char { color: #d93025; text-decoration: underline; font-weight: bold; }
@@ -54,7 +49,6 @@
         .tab-btn { flex: 1; padding: 12px 5px; background: #eee; border: none; border-radius: 8px; font-weight: bold; color: #555; font-size: 16px; transition: background 0.2s, color 0.2s; }
         .tab-btn.active { background: var(--primary); color: white; }
 
-        /* 🔥 수정된 깔끔한 범례 스타일 */
         .legend-box { background: #f8f9fa; border: 1px solid #e8eaed; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 14px; color: #5f6368; display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; align-items: center; }
         .legend-box span { display: inline-flex; align-items: center; gap: 4px; }
         .legend-star { color: #d93025; font-weight: bold; font-size: 1.2em; line-height: 1; }
@@ -120,6 +114,15 @@
                     <option value="4">4일차 (금요일)</option>
                 </select>
             </div>
+            <!-- 🔥 문제 방식 선택 옵션 복구 -->
+            <div class="menu-item">
+                <label>📝 문제 방식</label>
+                <select id="mode-select">
+                    <option value="content">장절 보고 내용 쓰기</option>
+                    <option value="ref">내용 보고 장절 쓰기</option>
+                    <option value="mix">장절/내용 둘다 (랜덤)</option>
+                </select>
+            </div>
             <div class="menu-item">
                 <label>🔄 진행 순서</label>
                 <select id="order-select">
@@ -128,9 +131,6 @@
                 </select>
             </div>
         </div>
-        
-        <!-- 문제 방식은 내용 쓰기로 숨김/고정 처리 -->
-        <input type="hidden" id="mode-select" value="content" />
         
         <div style="border-top: 1px solid #eee; padding-top: 20px; display: flex; flex-direction: column;">
             <button class="btn-contest" onclick="startQuiz()">연습시작</button>
@@ -148,7 +148,7 @@
             <span id="day-label" class="day-label"></span>
             <div id="question-text"></div>
         </div>
-        <textarea id="userInput" placeholder="장절에 해당하는 내용을 입력하세요..." autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
+        <textarea id="userInput" placeholder="정답을 입력하세요..." autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
         
         <div class="quiz-btns-top">
             <button class="btn-gray" onclick="prevQuestion()">이전(F1)</button>
@@ -156,7 +156,7 @@
             <button class="btn-gray" onclick="retryCurrentQuestion()">재시도(F3)</button>
         </div>
         <div class="quiz-btns-bottom">
-            <button class="btn-book" onclick="checkAnswer()">정답 확인</button>
+            <button class="btn-book" onclick="checkAnswer()">정답 확인(Enter)</button>
             <button class="btn-stop" onclick="goBackManually()">홈으로(Esc)</button>
         </div>
         
@@ -193,7 +193,7 @@
             <button class="tab-btn" id="tab-4" onclick="showBookCourse(4)">4과정</button>
         </div>
 
-        <!-- 🔥 깔끔해진 추가 구절 범례 -->
+        <!-- 깔끔해진 추가 구절 범례 -->
         <div class="legend-box">
             <span>💡 <b>추가 구절:</b></span>
             <span><span class="legend-star">*</span> 2과정</span>
@@ -464,7 +464,7 @@
         isCorrectState = false; 
         currentItem = currentList[currentIndex];
         
-        // 기본적으로 장절보고 내용쓰기 모드로 동작
+        // 문제 방식 선택 (내용 쓰기, 장절 쓰기, 섞어서)
         const mode = document.getElementById('mode-select') ? document.getElementById('mode-select').value : 'content';
         if (mode === 'mix') isRefMode = Math.random() > 0.5;
         else isRefMode = (mode === 'ref');
@@ -509,7 +509,8 @@
         }, 10);
     }
 
-    function cleanText(text) { return text.replace(/[\s,]/g, ""); }
+    /* 🔥 공백, 쉼표(,), 괄호(()), 슬래시(/) 를 모두 무시하도록 정규식 수정 */
+    function cleanText(text) { return text.replace(/[\s,\(\)\/]/g, ""); }
 
     function checkAnswer() {
         const userIn = document.getElementById('userInput').value;
@@ -530,7 +531,8 @@
             const targetArr = target.split("");
             for (let i = 0; i < targetArr.length; i++) {
                 const char = targetArr[i];
-                if (" , \n".includes(char)) { diffHtml += char === "\n" ? "<br>" : char; continue; }
+                /* 🔥 오답 비교 시에도 괄호와 슬래시, 쉼표를 자연스럽게 건너뜁니다 */
+                if (" , \n()\/".includes(char)) { diffHtml += char === "\n" ? "<br>" : char; continue; }
                 if (uIdx < uCleanArr.length && uCleanArr[uIdx] === char) { diffHtml += char; } 
                 else { diffHtml += `<span class='wrong-char'>${char}</span>`; }
                 uIdx++;
@@ -623,7 +625,10 @@
 
     document.getElementById('userInput').addEventListener('keydown', function(e) {
         if (e.key === 'Enter' && !e.shiftKey && !isCorrectState) {
-            if (window.innerWidth > 768) { 
+            /* 🔥 접속 기기를 판별하여 스마트폰이 아닐 때(PC/태블릿 가로모드 등)만 엔터 제출 허용 */
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            
+            if (!isMobile) { 
                 e.preventDefault(); 
                 e.stopPropagation(); 
                 checkAnswer(); 
